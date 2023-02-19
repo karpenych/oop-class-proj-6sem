@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -7,6 +8,7 @@ public class PlayerController : MonoBehaviour
 {
     [SerializeField] private float _moveSpeed;
     [SerializeField] Transform _spawnPos;
+    [SerializeField] TMP_Text posText;
     private Vector2 _moveDirection;
     private Rigidbody _rb;
 
@@ -18,18 +20,20 @@ public class PlayerController : MonoBehaviour
 
     private void Awake()
     {
-        _rb = GetComponent<Rigidbody>();
-        transform.position = _spawnPos.position;
+        
     }
 
     private void Start()
     {
+        _rb = GetComponent<Rigidbody>();
+        transform.position = _spawnPos.position;
         StartCoroutine(SpawnIgnoreCollision());
     }
 
     void FixedUpdate()
     {
         Move(_moveDirection);
+        posText.text = DisplayCoordinates(transform.position);
     }
 
     private void Move(Vector2 direction)
@@ -44,6 +48,11 @@ public class PlayerController : MonoBehaviour
     {
         yield return new WaitForSeconds(5);
         gameObject.layer = LayerMask.NameToLayer("Player");
+    }
+
+    string DisplayCoordinates(Vector3 pos)
+    {
+        return $"x: {pos.x}\ny: {pos.z}";
     }
 
 }
