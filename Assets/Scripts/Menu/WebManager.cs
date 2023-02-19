@@ -51,10 +51,10 @@ public class WebManager : MonoBehaviour
         
     }
 
-    public void SaveData() // DATA SAVING
+    public void SaveData(int id, Vector3 pos) // DATA SAVING
     {
         StopAllCoroutines();
-        SavingData(0);
+        SavingData(id, pos);
     }
 
     public bool CheckString(string toCheck)
@@ -94,11 +94,13 @@ public class WebManager : MonoBehaviour
         StartCoroutine(SendData(form, RequestType.register));
     }
 
-    public void SavingData(int id)
+    public void SavingData(int id, Vector3 pos)
     {
+        var pos_json = JsonUtility.ToJson(pos);
         var form = new WWWForm();
         form.AddField("type", RequestType.save.ToString());
         form.AddField("id", id);
+        form.AddField("pos", pos_json);
         StartCoroutine(SendData(form, RequestType.save));
     }
 

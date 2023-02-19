@@ -6,7 +6,7 @@ using UnityEngine;
 [System.Serializable]
 public class UserData
 {
-    //Player playerData;
+    public Player playerData;
     public Error error;
 }
 
@@ -17,11 +17,12 @@ public class Error
     public bool isError;
 }
 
-/*[System.Serializable]
+[System.Serializable]
 public class Player
 {
+    public int id;
     public Vector3 pos;
-}*/
+}
 
 
 
@@ -52,7 +53,7 @@ public class DataManager : MonoBehaviour
 
     public void SaveData()
     {
-        webManager.SaveData();
+        webManager.SaveData(userData.playerData.id, userData.playerData.pos);
     }
 
 
