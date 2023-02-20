@@ -21,18 +21,17 @@ public class LogRegManager : MonoBehaviour
     public MenuSignIn signIn;
     public MenuRegistration reg;
 
-    [SerializeField] Button _btStart;
-    [SerializeField] WebManager webManager;
-    
+    [SerializeField] Button _btStart;    
 
 
     public void OnSignInClick() // SIGN IN
     {
-        webManager.Login(signIn.siLogin.text, signIn.siPassword.text);
+        WebManager.Instance.Login(signIn.siLogin.text, signIn.siPassword.text);
+        print("SignIn Clicked");
     }
 
     public void OnRegisterClick() // REGISTER
     {
-        webManager.Registration(reg.regLogin.text, reg.regPassword.text, reg.regConfirmPassword.text);
+        WebManager.Instance.Registration(reg.regLogin.text, reg.regPassword.text, reg.regConfirmPassword.text);
     }
 }

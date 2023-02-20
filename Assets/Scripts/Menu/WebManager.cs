@@ -5,18 +5,32 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Networking;
 using UnityEngine.UI;
-using static WebManager;
 
 public class WebManager : MonoBehaviour
 {
     [SerializeField] GameObject registerField;
     [SerializeField] Button _btStart;
     [SerializeField] string targetURL;
-    [SerializeField] UnityEvent OnError;
+    [SerializeField] UnityEvent OnError, OnRegister, OnLogin;
+    public static WebManager Instance { get; private set; } 
 
     public enum RequestType
     {
         logging, register, save
+    }
+
+
+
+    private void Awake()
+    {
+        if (Instance != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
     }
 
 
@@ -51,7 +65,7 @@ public class WebManager : MonoBehaviour
         
     }
 
-    public void SaveData(int id, Vector3 pos) // DATA SAVING
+    public void SaveData(int id, string pos) // DATA SAVING
     {
         StopAllCoroutines();
         SavingData(id, pos);
@@ -94,13 +108,12 @@ public class WebManager : MonoBehaviour
         StartCoroutine(SendData(form, RequestType.register));
     }
 
-    public void SavingData(int id, Vector3 pos)
+    public void SavingData(int id, string pos)
     {
-        var pos_json = JsonUtility.ToJson(pos);
         var form = new WWWForm();
         form.AddField("type", RequestType.save.ToString());
         form.AddField("id", id);
-        form.AddField("pos", pos_json);
+        form.AddField("pos", pos);
         StartCoroutine(SendData(form, RequestType.save));
     }
 
@@ -124,11 +137,12 @@ public class WebManager : MonoBehaviour
                     if (type == RequestType.logging)
                     {
                         _btStart.enabled = true;
+                        OnLogin.Invoke();
                     }
                     else
                     {
                         registerField.SetActive(false);
-                        ErrorIndicator.errorIndicator.errorText.text = "";
+                        OnRegister.Invoke();
                     }
                 }
             }

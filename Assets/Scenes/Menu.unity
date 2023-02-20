@@ -1009,10 +1009,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   userData:
+    playerData:
+      id: 0
+      pos: 
     error:
       errorText: 
       isError: 0
-  webManager: {fileID: 0}
+  _firstSpawnPos: {x: 0, y: 0, z: 0}
 --- !u!4 &306852728
 Transform:
   m_ObjectHideFlags: 0
@@ -1603,7 +1606,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 38, y: 79}
+  m_AnchoredPosition: {x: -150, y: 79}
   m_SizeDelta: {x: 650.0421, y: 92.5885}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &378626333
@@ -2170,6 +2173,36 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  OnRegister:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 378626335}
+        m_TargetAssemblyTypeName: ErrorIndicator, Assembly-CSharp
+        m_MethodName: DisplayRegister
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  OnLogin:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 378626335}
+        m_TargetAssemblyTypeName: ErrorIndicator, Assembly-CSharp
+        m_MethodName: DisplayLogin
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!4 &667256893
 Transform:
   m_ObjectHideFlags: 0
@@ -2205,7 +2238,6 @@ MonoBehaviour:
     regPassword: {fileID: 172256455}
     regConfirmPassword: {fileID: 1638627085}
   _btStart: {fileID: 1464444053}
-  webManager: {fileID: 667256892}
 --- !u!1 &723478238
 GameObject:
   m_ObjectHideFlags: 0
@@ -3743,6 +3775,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _btStart: {fileID: 1464444053}
   registerField: {fileID: 835056905}
+  menu: {fileID: 1279279897}
 --- !u!1 &1316141560
 GameObject:
   m_ObjectHideFlags: 0

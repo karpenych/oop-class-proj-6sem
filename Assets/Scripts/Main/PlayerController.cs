@@ -7,8 +7,8 @@ using UnityEngine.InputSystem;
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] private float _moveSpeed;
-    [SerializeField] Transform _spawnPos;
     [SerializeField] TMP_Text posText;
+    [SerializeField] GameObject playerMenu;
     private Vector2 _moveDirection;
     private Rigidbody _rb;
 
@@ -20,20 +20,26 @@ public class PlayerController : MonoBehaviour
 
     private void Awake()
     {
-        
+        _rb = GetComponent<Rigidbody>();
     }
 
     private void Start()
     {
-        _rb = GetComponent<Rigidbody>();
-        transform.position = _spawnPos.position;
+        transform.position = DataManager.dataManager.LoadSpawnPosition();
         StartCoroutine(SpawnIgnoreCollision());
+        posText.text = DisplayCoordinates(transform.position);
     }
 
     void FixedUpdate()
     {
         Move(_moveDirection);
         posText.text = DisplayCoordinates(transform.position);
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+            playerMenu.SetActive(true);
     }
 
     private void Move(Vector2 direction)

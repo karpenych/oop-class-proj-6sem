@@ -9,7 +9,21 @@ public class MenuManager : MonoBehaviour
 {
     [SerializeField] Button _btStart;
     [SerializeField] GameObject registerField;
+    [SerializeField] GameObject menu;
+    public static MenuManager Instance { get; private set; }
 
+
+    private void Awake()
+    {
+        if (Instance != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
 
     private void Start()
     {
@@ -38,7 +52,12 @@ public class MenuManager : MonoBehaviour
 
     public void OnStartClick() // START
     {
-        SceneManager.LoadScene("Main");
+        menu.SetActive(false);
+        SceneManager.LoadScene("Main");   
     }
-    
+
+    public void ShowMenu()
+    {
+        menu.SetActive(true);
+    }
 }

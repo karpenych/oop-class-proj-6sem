@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.InputSystem.LowLevel.InputStateHistory;
+using UnityEngine.EventSystems;
 
 
 [System.Serializable]
@@ -21,7 +23,7 @@ public class Error
 public class Player
 {
     public int id;
-    public Vector3 pos;
+    public string pos;
 }
 
 
@@ -31,7 +33,7 @@ public class DataManager : MonoBehaviour
 {
     public static DataManager dataManager { get; private set; }
     public UserData userData;
-    [SerializeField] WebManager webManager;
+    [SerializeField] Vector3 _firstSpawnPos;
 
 
     private void Awake()
@@ -46,16 +48,33 @@ public class DataManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    public void LoadData()
+    private void Start()
     {
-
+        _firstSpawnPos = new(0, 0, 0);
     }
 
     public void SaveData()
     {
-        webManager.SaveData(userData.playerData.id, userData.playerData.pos);
+        WebManager.Instance.SaveData(userData.playerData.id, userData.playerData.pos);
     }
 
+    public Vector3 LoadSpawnPosition()
+    {
+        if (userData.playerData.pos != "Null")
+        {
+            return SetPosition(JsonUtility.FromJson<Vector3>(userData.playerData.pos));
+        }
+        else
+        {
+            return SetPosition(_firstSpawnPos);
+        }
+    }
 
+    public Vector3 SetPosition(Vector3 pos)
+    {
+        var spawn_pos = pos;
+        spawn_pos.y += 3;
+        return spawn_pos;
+    }
 
 }
