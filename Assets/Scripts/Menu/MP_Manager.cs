@@ -9,15 +9,19 @@ using UnityEngine;
 
 public class MP_Manager : MonoBehaviour
 {
+    public static MP_Manager Instance { get; private set; }
+
     [SerializeField] GameObject conn_text_obj;
     [SerializeField] TMP_Text conn_text;
     [SerializeField] GameObject playerPrefab;
     [SerializeField] Material myColor;
 
+    public static Dictionary<int, Player> playersInGame;
+
+
     const string SERVER_IP = "127.0.0.1";
     const int SERVER_PORT = 8080;
     Socket tcpClient;
-    public Dictionary<int, Player> playersInGame;
 
 
     public struct Player
@@ -35,6 +39,11 @@ public class MP_Manager : MonoBehaviour
     }
 
 
+
+    private void Awake()
+    {
+        Instance = this;
+    }
 
     void Start()
     {
@@ -83,7 +92,7 @@ public class MP_Manager : MonoBehaviour
             toServerFirstCon.Z = pos.z;
         }
 
-        print("Send: " + JsonUtility.ToJson(toServerFirstCon));
+        print("Отправили на сервер: " + JsonUtility.ToJson(toServerFirstCon));
         byte[] data = Encoding.UTF8.GetBytes(JsonUtility.ToJson(toServerFirstCon));
         tcpClient.Send(data); // Отсылаем инфу о себе (id и координаты)
 
@@ -104,7 +113,7 @@ public class MP_Manager : MonoBehaviour
             Array.Copy(data, 0, player_data, 0, read_len);
 
             var playerInGameInfoJsonStr = Encoding.UTF8.GetString(player_data); // Полученные байты в JSON
-            print($"JSON игрока - {playerInGameInfoJsonStr}");
+            print($"Получили JSON игрока[{i}] - {playerInGameInfoJsonStr}");
 
             playerInGameInfo = JsonUtility.FromJson<PlayerInfo>(playerInGameInfoJsonStr); // Из JSON в структуру
 

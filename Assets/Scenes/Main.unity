@@ -2000,7 +2000,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b1196184a3799442b82c6e920ec84ac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _target: {fileID: 0}
   _lerpRate: 10
 --- !u!1 &1011935674
 GameObject:
