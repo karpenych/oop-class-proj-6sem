@@ -45,7 +45,7 @@ public class WebManager : MonoBehaviour
         }
         else
         {
-            DataManager.dataManager.userData.error.errorText = "To small length";
+            DataManager.dataManager.userData.error.errorText = "Too small length";
             OnError.Invoke();
         }
     }
@@ -59,7 +59,7 @@ public class WebManager : MonoBehaviour
         }
         else
         {
-            DataManager.dataManager.userData.error.errorText = "To small length";
+            DataManager.dataManager.userData.error.errorText = "Too small length";
             OnError.Invoke();
         }
         
@@ -85,7 +85,6 @@ public class WebManager : MonoBehaviour
 
     public UserData SetUserData(string data)
     {
-        print(data);
         return JsonUtility.FromJson<UserData>(data);
     }
 
@@ -134,6 +133,7 @@ public class WebManager : MonoBehaviour
                 if (type != RequestType.save)
                 {
                     DataManager.dataManager.userData = data;
+                    print($"Загружены данные: {www.downloadHandler.text}");
                     if (type == RequestType.logging)
                     {
                         _btStart.enabled = true;

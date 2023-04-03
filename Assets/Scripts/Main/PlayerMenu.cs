@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -23,9 +24,11 @@ public class PlayerMenu : MonoBehaviour
 
     public void OnSaveCoordinatesClick()
     {
-        DataManager.dataManager.userData.playerData.pos = JsonUtility.ToJson(player_pos.position);
+        var pos = player_pos.position;
+        pos.x = (float)Math.Round(pos.x);
+        pos.z = (float)Math.Round(pos.z);
+        DataManager.dataManager.userData.playerData.pos = JsonUtility.ToJson(pos);
         DataManager.dataManager.SaveData();
+        print($"Сохранили координаты: {DataManager.dataManager.userData.playerData.pos}");
     }
-    
-    
 }

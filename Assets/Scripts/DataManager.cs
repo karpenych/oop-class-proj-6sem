@@ -50,7 +50,7 @@ public class DataManager : MonoBehaviour
 
     private void Start()
     {
-        _firstSpawnPos = new(0, 0, 0);
+        _firstSpawnPos = new(0, 0.5f, 0);
     }
 
     public void SaveData()

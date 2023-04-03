@@ -27,7 +27,6 @@ public class LogRegManager : MonoBehaviour
     public void OnSignInClick() // SIGN IN
     {
         WebManager.Instance.Login(signIn.siLogin.text, signIn.siPassword.text);
-        print("SignIn Clicked");
     }
 
     public void OnRegisterClick() // REGISTER
