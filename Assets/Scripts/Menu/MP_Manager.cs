@@ -18,11 +18,10 @@ public class MP_Manager : MonoBehaviour
 
     public static Dictionary<int, Player> playersInGame;
 
-
     const string SERVER_IP = "127.0.0.1";
     const int SERVER_PORT = 8080;
     Socket tcpClient;
-
+    MoveData moveData;
 
     public struct Player
     {
@@ -38,6 +37,16 @@ public class MP_Manager : MonoBehaviour
         public float Z;
     }
 
+    struct MoveData 
+    {
+        public bool up;
+        public bool right;
+        public bool down;
+        public bool left;
+        public int  _id;
+    }
+
+
 
 
     private void Awake()
@@ -49,16 +58,51 @@ public class MP_Manager : MonoBehaviour
     {
         tcpClient = new(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         playersInGame = new();
-        BecomeTCP_Work();
+        moveData = new()
+        {
+            up    = false,
+            right = false,
+            down  = false,
+            left  = false,
+            _id   = DataManager.dataManager.userData.playerData.id
+        };
+        
+        ConnectToServer();
     }
 
     void Update()
     {
+        moveData.up = false;
+        moveData.right = false;
+        moveData.down = false;
+        moveData.left = false;
 
+        if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
+        {
+            moveData.up = true;
+        }
+        if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
+        {
+            moveData.right = true;
+        }
+        if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
+        {
+            moveData.down = true;
+        }
+        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
+        {
+            moveData.left = true;
+        }
+
+        if (moveData.up || moveData.right || moveData.down || moveData.left) // Если есть движение то
+        {
+            byte[] data = Encoding.UTF8.GetBytes(JsonUtility.ToJson(moveData));
+            tcpClient.Send(data); // Отсылаем инфу о передвижении (id и направления)
+        }
 
     }
 
-    void BecomeTCP_Work()
+    void ConnectToServer()
     {
         try
         {
