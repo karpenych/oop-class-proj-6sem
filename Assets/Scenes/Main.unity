@@ -3640,10 +3640,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 253bccb95f851c54ba76e8a53737fb02, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  conn_text_obj: {fileID: 1027343420}
-  conn_text: {fileID: 1027343422}
   playerPrefab: {fileID: 6542824279309569965, guid: 6818a94ee4f7ebc45affd55af756db80, type: 3}
   myColor: {fileID: 2100000, guid: d438b21ea1884244c9467378bc41f2bb, type: 2}
+  playerMenu: {fileID: 1802498836}
+  posText: {fileID: 1027343422}
 --- !u!4 &1421821875
 Transform:
   m_ObjectHideFlags: 0

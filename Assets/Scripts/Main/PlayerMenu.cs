@@ -24,7 +24,7 @@ public class PlayerMenu : MonoBehaviour
 
     public void OnSaveCoordinatesClick()
     {
-        var pos = player_pos.position;
+        var pos = MP_Manager.Instance.playersInGame[DataManager.dataManager.userData.playerData.id].transform.position;
         pos.x = (float)Math.Round(pos.x);
         pos.z = (float)Math.Round(pos.z);
         DataManager.dataManager.userData.playerData.pos = JsonUtility.ToJson(pos);
