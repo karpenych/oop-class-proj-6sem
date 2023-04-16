@@ -1,14 +1,11 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading;
 using TMPro;
-using Unity.VisualScripting;
-using UnityEditor;
 using UnityEngine;
-using static UnityEditor.PlayerSettings;
+using UnityEngine.SceneManagement;
+
 
 public class MP_Manager : MonoBehaviour
 {
@@ -20,26 +17,25 @@ public class MP_Manager : MonoBehaviour
     [SerializeField] TMP_Text posText; //Текс координаты
     float speed = 10f; //Скорость игрока
 
-    public Dictionary<int, GameObject> playersInGame;
+    public Dictionary<int, GameObject> playersInGame; //Все ишроки в игре
+    public Socket tcpClient; //tcp отправитель
+    public TcpClient tcpGameHandler; //tcp принематель
+    public NetworkStream stream; //Поток для работы tcp принемателя
 
-    const string SERVER_IP = "127.0.0.1";
-    const int SERVER_PORT = 8080;
-    Socket tcpClient;
-    TcpClient tcpGameHandler;
-    NetworkStream stream;
-    GameObject myPlayer;
-
-    MoveDataTo moveData;
+    const string SERVER_IP = "127.0.0.1"; //IP сервера
+    const int SERVER_PORT = 8080; //Порт подключения
+    GameObject myPlayer; //Наш игрок
+    MoveDataTo moveData; //Данные о движении
 
 
-    struct PlayerInfo
+    struct PlayerInfo //Для игроков 
     {
         public int ID;
         public float X;
         public float Z;
     }
 
-    struct MoveDataTo 
+    struct MoveDataTo //Для двмжения (тправляем на сервер) 
     {
         public bool  Up;
         public bool  Right;
@@ -50,7 +46,7 @@ public class MP_Manager : MonoBehaviour
         public float Z;
     }
 
-    struct MoveDataFrom
+    struct MoveDataFrom //Для движения (получем от сервера)
     {
         public bool Up;
         public bool Right;
@@ -146,11 +142,11 @@ public class MP_Manager : MonoBehaviour
         catch
         {
             print("XXXXXX-Сервер не отвечает-XXXXXX");
-#if UNITY_EDITOR
-            EditorApplication.ExitPlaymode();
-#else
-            Application.Quit();
-#endif  
+            //Переходим в меню
+            ErrorIndicator.errorIndicator.ServerNotResponce();
+            MenuManager.Instance.ShowMenu();
+            SceneManager.LoadScene(0);
+           
             return;
         }
 
@@ -220,6 +216,17 @@ public class MP_Manager : MonoBehaviour
 
             var info_from_server = Encoding.UTF8.GetString(server_data); // Из полученных байтов в JSON
             print($"****Получили от сервера - {info_from_server}");
+
+            if (info_from_server == "servend")
+            {
+                print("------Сервер завершил работу-------");
+                //Переходим в меню
+                ErrorIndicator.errorIndicator.ServerNotResponce();
+                MenuManager.Instance.ShowMenu();
+                SceneManager.LoadScene(0);
+                
+                return;
+            }
 
             if (info_from_server[..2] == "np") //Если новый игрок
             {

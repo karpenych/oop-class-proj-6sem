@@ -6,6 +6,8 @@ import (
 	"log"
 	"net"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/gammazero/deque"
 )
@@ -56,6 +58,8 @@ var queue deque.Deque[MoveDataTo]
 // ----------------------------------------------------------------------------
 
 func main() {
+	go GracefulShutdown()
+
 	var firstPlayerConnInfo ToPlayer
 
 	listen, err := net.Listen(_TYPE, _HOST+":"+_PORT) // Создаём слушатель подключений
@@ -68,8 +72,15 @@ func main() {
 	defer listen.Close() //Выключаем листенер после выключения сервера
 
 	var closeConnections func() = func() {
-		for _, playerInfo := range clients {
+		for _id, playerInfo := range clients {
+			_, err := playerInfo.GameHandlerConn.Write([]byte(fmt.Sprintf("servend"))) //Отправить всем сигнал о выключении сервера
+			if err != nil {
+				fmt.Printf("XXXXXX Не получилось отправить игроку %d данные о завершении сервера\n", _id)
+				fmt.Println(err.Error())
+				continue
+			}
 			playerInfo.Connection.Close()
+			playerInfo.GameHandlerConn.Close()
 		}
 	}
 	defer closeConnections() //Выключаем подключения после выключения сервера
@@ -125,7 +136,7 @@ func main() {
 			X:               firstPlayerConnInfo.X,
 			Z:               firstPlayerConnInfo.Z,
 		}
-		fmt.Printf("----Новый игрок: ID: %d; координаты%#v\n", firstPlayerConnInfo.ID, clients[firstPlayerConnInfo.ID])
+		fmt.Printf("----Новый игрок: ID: %d; инфа: %#v\n", firstPlayerConnInfo.ID, clients[firstPlayerConnInfo.ID])
 
 		// шлем новому клинту количество игроков в игре
 		_, err = clients[firstPlayerConnInfo.ID].Connection.Write([]byte(fmt.Sprintf("%d", len(clients))))
@@ -187,6 +198,26 @@ func main() {
 	}
 }
 
+func GracefulShutdown() {
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+	select {
+	case sig := <-sigChan:
+		for _id, playerInfo := range clients {
+			_, err := playerInfo.GameHandlerConn.Write([]byte(fmt.Sprintf("servend"))) //Отправить всем сигнал о выключении сервера
+			if err != nil {
+				fmt.Printf("XXXXXX Не получилось отправить игроку %d данные о завершении сервера\n", _id)
+				fmt.Println(err.Error())
+				continue
+			}
+			playerInfo.Connection.Close()
+			playerInfo.GameHandlerConn.Close()
+		}
+		fmt.Println("Сервер остановлен сигналом", sig)
+		os.Exit(1)
+	}
+}
+
 // ----------------------------------------------------------------------------
 // ---------------------------Поток слушатель движения----------------------
 // ----------------------------------------------------------------------------
@@ -205,6 +236,12 @@ func MoveListener(id int) {
 		}
 
 		data = data[:read_len]
+
+		if string(data) == "end" { //Если пришёл сигнал end то закрываем подключение
+			fmt.Printf("::::Клиент %d (%#v) отключился\n", id, clients[id])
+			break
+		}
+
 		err = json.Unmarshal(data, &playerMovementFrom) // Распаковка JSON
 		if err != nil {
 			fmt.Printf("XXXХХ Не получилось размаршалить движение\n")
@@ -228,6 +265,15 @@ func MoveListener(id int) {
 		fmt.Printf("****Новые координаты X: %d; Z: %d; у %d\n", clients[playerMovementFrom.ID].X, clients[playerMovementFrom.ID].Z, playerMovementFrom.ID)
 		fmt.Printf("****Встало в очередь (*без координат): %s  (%d)\n", string(data), queue.Len())
 	}
+
+	clients[id].Connection.Close()
+	clients[id].GameHandlerConn.Close()
+	delete(clients, id)
+	fmt.Printf("----Вывод всех игроков на сервере:\n")
+	for key, value := range clients {
+		fmt.Printf("--ID - %d; Info - %#v:\n", key, value)
+	}
+
 }
 
 // ----------------------------------------------------------------------------
