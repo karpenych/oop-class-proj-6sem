@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"github.com/gammazero/deque"
@@ -71,21 +72,8 @@ func main() {
 
 	defer listen.Close() //Выключаем листенер после выключения сервера
 
-	var closeConnections func() = func() {
-		for _id, playerInfo := range clients {
-			_, err := playerInfo.GameHandlerConn.Write([]byte(fmt.Sprintf("servend"))) //Отправить всем сигнал о выключении сервера
-			if err != nil {
-				fmt.Printf("XXXXXX Не получилось отправить игроку %d данные о завершении сервера\n", _id)
-				fmt.Println(err.Error())
-				continue
-			}
-			playerInfo.Connection.Close()
-			playerInfo.GameHandlerConn.Close()
-		}
-	}
-	defer closeConnections() //Выключаем подключения после выключения сервера
-
-	go MoveSender() //Запускаем поток отправитель новых координат
+	go RunServerTools() //Запускаем поток управление сервера
+	go MoveSender()     //Запускаем поток отправитель новых координат
 
 	for {
 		conn, err := listen.Accept() // Ждём подключения
@@ -153,7 +141,7 @@ func main() {
 			fmt.Println(err.Error())
 			continue
 		}
-		fmt.Printf("----Клиент принял кол-во игроков: %s\n", string(data))
+		fmt.Printf("----Клиент принял кол-во игроков (%d): %s\n", len(clients), string(data))
 
 		for _id, _playerInfo := range clients { // отправляем всех игроков (по одному) новому игроку
 			to_player := ToPlayer{
@@ -186,14 +174,8 @@ func main() {
 			}
 			fmt.Printf("----Клиент принял инфу о игроке: %s\n", string(data))
 		}
-
+		fmt.Println()
 		_player_ID := firstPlayerConnInfo.ID
-
-		fmt.Printf("----Вывод всех игроков на сервере:\n")
-		for key, value := range clients {
-			fmt.Printf("--ID - %d; Info - %#v:\n", key, value)
-		}
-
 		go MoveListener(_player_ID) //Принемаем движения игрока
 	}
 }
@@ -224,10 +206,17 @@ func GracefulShutdown() {
 
 func MoveListener(id int) {
 	for {
+		defer func() {
+			if err := recover(); err != nil {
+				log.Println("ИГРОК ОТКЛЮЧЁН:", err)
+			}
+		}()
+
 		var playerMovementFrom MoveDataFrom
 		var playerMovementTo MoveDataTo
 
 		data := make([]byte, 1024)
+
 		read_len, err := clients[id].Connection.Read(data) // Принимаем id и движение в JSON от клиента
 		if err != nil {
 			fmt.Printf("XXXХХ Не получилось принять движение\n")
@@ -262,18 +251,16 @@ func MoveListener(id int) {
 
 		queue.PushBack(playerMovementTo) //Записываем движение в очередь
 
-		fmt.Printf("****Новые координаты X: %d; Z: %d; у %d\n", clients[playerMovementFrom.ID].X, clients[playerMovementFrom.ID].Z, playerMovementFrom.ID)
-		fmt.Printf("****Встало в очередь (*без координат): %s  (%d)\n", string(data), queue.Len())
+		//fmt.Printf("****Новые координаты X: %#v; Z: %#v; у %d\n", clients[playerMovementFrom.ID].X, clients[playerMovementFrom.ID].Z, playerMovementFrom.ID)
+		//fmt.Printf("****Встало в очередь (*без координат): %s  (%d)\n", string(data), queue.Len())
 	}
 
-	clients[id].Connection.Close()
-	clients[id].GameHandlerConn.Close()
-	delete(clients, id)
-	fmt.Printf("----Вывод всех игроков на сервере:\n")
-	for key, value := range clients {
-		fmt.Printf("--ID - %d; Info - %#v:\n", key, value)
+	if _, ok := clients[id]; !ok {
+		clients[id].Connection.Close()
+		clients[id].GameHandlerConn.Close()
+		delete(clients, id)
+		go DeletePlayer(id)
 	}
-
 }
 
 // ----------------------------------------------------------------------------
@@ -305,6 +292,80 @@ func MoveSender() {
 				continue
 			}
 		}
-		fmt.Printf("****Ушло всем из очереди: %#v\n", playerMovementTo)
+		//fmt.Printf("****Ушло всем из очереди: %#v\n", playerMovementTo)
+	}
+}
+
+// ----------------------------------------------------------------------------
+// ----------------------------Поток отключения клиента------------------------
+// ----------------------------------------------------------------------------
+
+func DeletePlayer(id int) {
+	for _, player := range clients { //Отправляем всем что игрок отключился
+		_, err := player.GameHandlerConn.Write([]byte(fmt.Sprintf("dp%d", id)))
+		if err != nil {
+			fmt.Printf("XXXXXX Не получилось отправить данные об отключении игрока\n")
+			fmt.Println(err.Error())
+			continue
+		}
+	}
+}
+
+// ----------------------------------------------------------------------------
+// ----------------------------Поток управление сервера------------------------
+// ----------------------------------------------------------------------------
+
+func RunServerTools() {
+	fmt.Printf(".....введите help для просмотра комманд.....\n\n")
+	var command string
+	for {
+		fmt.Scanf("%s\n", &command)
+
+		if strings.ToLower(command) == "help" { //---------------------help
+			fmt.Printf("\n$showplayers - показать всех игроков в сети\n")
+			fmt.Println("$del - удалить игрока")
+			fmt.Printf("$exit - выключить сервер\n\n")
+		}
+
+		if strings.ToLower(command) == "showplayers" { //--------showplayers
+			fmt.Printf("----Вывод всех игроков в сети:\n")
+			for key, value := range clients {
+				fmt.Printf("--ID - %d; Info - %#v:\n", key, value)
+			}
+			fmt.Println()
+		}
+
+		if strings.ToLower(command) == "del" { //----------------------del
+			var _id int
+			fmt.Printf("введите ID игрока: ")
+			fmt.Scanf("%d\n", &_id)
+
+			_, err := clients[_id].GameHandlerConn.Write([]byte(fmt.Sprintf("servend"))) //Отправить игроку сигнал о выключении
+			if err != nil {
+				fmt.Printf("XXXXXX Не получилось отправить игроку %d данные о завершении\n", _id)
+				fmt.Println(err.Error())
+				continue
+			}
+
+			clients[_id].Connection.Close()
+			clients[_id].GameHandlerConn.Close()
+			delete(clients, _id)
+			go DeletePlayer(_id)
+		}
+
+		if strings.ToLower(command) == "exit" { //----------------------exit
+			for _id, playerInfo := range clients {
+				_, err := playerInfo.GameHandlerConn.Write([]byte(fmt.Sprintf("servend"))) //Отправить всем сигнал о выключении сервера
+				if err != nil {
+					fmt.Printf("XXXXXX Не получилось отправить игроку %d данные о завершении сервера\n", _id)
+					fmt.Println(err.Error())
+					continue
+				}
+				playerInfo.Connection.Close()
+				playerInfo.GameHandlerConn.Close()
+			}
+			fmt.Println("Сервер остановлен")
+			os.Exit(1)
+		}
 	}
 }

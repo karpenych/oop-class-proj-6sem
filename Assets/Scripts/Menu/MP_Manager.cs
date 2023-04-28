@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using TMPro;
@@ -17,7 +18,7 @@ public class MP_Manager : MonoBehaviour
     [SerializeField] TMP_Text posText; //Текс координаты
     float speed = 10f; //Скорость игрока
 
-    public Dictionary<int, GameObject> playersInGame; //Все ишроки в игре
+    public Dictionary<int, GameObject> playersInGame; //Все игроки в игре
     public Socket tcpClient; //tcp отправитель
     public TcpClient tcpGameHandler; //tcp принематель
     public NetworkStream stream; //Поток для работы tcp принемателя
@@ -112,14 +113,14 @@ public class MP_Manager : MonoBehaviour
             playerMenu.SetActive(true);
         }
 
-        GameHendler(); //Поток добавления новых игроков и передвижения игроков
+        GameHendler(); //Поток добавления новых игроков (удаления игроков) и передвижения игроков
     }
 
     void FixedUpdate()
     {
         posText.text = $"x(-): {myPlayer.transform.position.x}\nz(|): {myPlayer.transform.position.z}";
-        moveData.X = (float)Math.Round(myPlayer.transform.position.x);
-        moveData.Z = (float)Math.Round(myPlayer.transform.position.z);
+        moveData.X = myPlayer.transform.position.x;
+        moveData.Z = myPlayer.transform.position.z;
 
         if (moveData.Up || moveData.Right || moveData.Down || moveData.Left) // Если есть движение то
         {
@@ -223,12 +224,10 @@ public class MP_Manager : MonoBehaviour
                 //Переходим в меню
                 ErrorIndicator.errorIndicator.ServerNotResponce();
                 MenuManager.Instance.ShowMenu();
-                SceneManager.LoadScene(0);
-                
+                SceneManager.LoadScene(0);    
                 return;
             }
-
-            if (info_from_server[..2] == "np") //Если новый игрок
+            else if (info_from_server[..2] == "np") //Если новый игрок
             {
                 PlayerInfo new_player = JsonUtility.FromJson<PlayerInfo>(info_from_server[2..]); //Инфа о новом игроке
 
@@ -237,50 +236,58 @@ public class MP_Manager : MonoBehaviour
 
                 playersInGame.Add(new_player.ID, playerGO); // Добавляем игрока в массив
                 print($"**Новый игрок заспавнен: ID - {new_player.ID}; Координаты: {playersInGame[new_player.ID].transform.position.x}; Z = {playersInGame[new_player.ID].transform.position.z}");
+                return;
             }
-
-            MoveDataFrom move_info = JsonUtility.FromJson<MoveDataFrom>(info_from_server); //Если движение 
-
-            Vector3 _movement = new();
-
-            if (move_info.Up && move_info.Down)
+            else if (info_from_server[..2] == "dp") //Если удалили игрока
             {
-                _movement.z = 0;
-            } 
-            else if (move_info.Up)
-            {
-                _movement.z = 1;
-            }
-            else if (move_info.Down)
-            {
-                _movement.z = -1;
-            } 
-            else
-            {
-                _movement.z = 0;
-            }
-
-            if (move_info.Left && move_info.Right)
-            {
-                _movement.x = 0;
-            }
-            else if (move_info.Right)
-            {
-                _movement.x = 1;
-            }
-            else if (move_info.Left)
-            {
-                _movement.x = -1;
+                var _id = int.Parse(info_from_server[2..]);
+                Destroy(playersInGame[_id]);
+                playersInGame.Remove(_id);
             }
             else
             {
-                _movement.x = 0;
+                MoveDataFrom move_info = JsonUtility.FromJson<MoveDataFrom>(info_from_server); //Если движение 
+
+                Vector3 _movement = new();
+
+                if (move_info.Up && move_info.Down)
+                {
+                    _movement.z = 0;
+                }
+                else if (move_info.Up)
+                {
+                    _movement.z = 1;
+                }
+                else if (move_info.Down)
+                {
+                    _movement.z = -1;
+                }
+                else
+                {
+                    _movement.z = 0;
+                }
+
+                if (move_info.Left && move_info.Right)
+                {
+                    _movement.x = 0;
+                }
+                else if (move_info.Right)
+                {
+                    _movement.x = 1;
+                }
+                else if (move_info.Left)
+                {
+                    _movement.x = -1;
+                }
+                else
+                {
+                    _movement.x = 0;
+                }
+
+                _movement.y = 0;
+
+                playersInGame[move_info.ID].transform.Translate(speed * Time.deltaTime * _movement, Space.World); //Передвинуть игрока
             }
-
-            _movement.y = 0;
-
-            playersInGame[move_info.ID].transform.Translate(speed * Time.deltaTime * _movement, Space.World); //Передвинуть игрока
-
         }
     }
 }

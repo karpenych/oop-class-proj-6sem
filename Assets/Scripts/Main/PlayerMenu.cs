@@ -33,6 +33,7 @@ public class PlayerMenu : MonoBehaviour
 
         //Переходим в меню
         ErrorIndicator.errorIndicator.SetEmpty();
+        MenuManager.Instance.DisableBtStart();
         MenuManager.Instance.ShowMenu();
         SceneManager.LoadScene(0);
     }
