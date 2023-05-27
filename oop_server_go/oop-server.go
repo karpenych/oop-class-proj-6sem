@@ -255,7 +255,7 @@ func MoveListener(id int) {
 		//fmt.Printf("****Встало в очередь (*без координат): %s  (%d)\n", string(data), queue.Len())
 	}
 
-	if _, ok := clients[id]; !ok {
+	if _, ok := clients[id]; ok {
 		clients[id].Connection.Close()
 		clients[id].GameHandlerConn.Close()
 		delete(clients, id)

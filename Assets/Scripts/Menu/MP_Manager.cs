@@ -23,7 +23,7 @@ public class MP_Manager : MonoBehaviour
     public TcpClient tcpGameHandler; //tcp принематель
     public NetworkStream stream; //Поток для работы tcp принемателя
 
-    const string SERVER_IP = "127.0.0.1"; //IP сервера
+    const string SERVER_IP = "localhost"; //IP сервера
     const int SERVER_PORT = 8080; //Порт подключения
     GameObject myPlayer; //Наш игрок
     MoveDataTo moveData; //Данные о движении
