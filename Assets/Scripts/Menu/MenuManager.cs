@@ -27,7 +27,7 @@ public class MenuManager : MonoBehaviour
 
     private void Start()
     {
-        _btStart.enabled = false;
+        DisableBtStart();
     }
 
     public void OnQuitClick() // QUIT
@@ -60,4 +60,10 @@ public class MenuManager : MonoBehaviour
     {
         menu.SetActive(true);
     }
+
+    public void DisableBtStart()
+    {
+        _btStart.enabled = false;
+    }
+
 }

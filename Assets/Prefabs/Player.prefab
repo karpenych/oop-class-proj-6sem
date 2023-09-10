@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 6542824279309569962}
   - component: {fileID: 6542824279309569963}
   - component: {fileID: 6542824279309569964}
-  - component: {fileID: 6542824279309569959}
   - component: {fileID: 6542824279309569958}
   m_Layer: 6
   m_Name: Player
@@ -65,7 +64,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: de813da565f1e6f45a52d6fe3a3858da, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -116,20 +115,6 @@ Rigidbody:
   m_Interpolate: 1
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &6542824279309569959
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6542824279309569965}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d75135ef987892344879c7a307834798, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _moveSpeed: 5
-  _spawnPos: {fileID: 0}
 --- !u!114 &6542824279309569958
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -157,7 +142,7 @@ MonoBehaviour:
   m_ActionEvents:
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 6542824279309569959}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: PlayerController, Assembly-CSharp
         m_MethodName: OnMove
         m_Mode: 0

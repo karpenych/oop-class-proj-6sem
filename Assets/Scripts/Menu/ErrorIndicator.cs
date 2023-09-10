@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
-using TMPro.EditorUtilities;
 using UnityEngine;
 
 public class ErrorIndicator : MonoBehaviour
@@ -24,17 +23,23 @@ public class ErrorIndicator : MonoBehaviour
     public void DisplayRegister()
     {
         errorText.color = Color.green;
-        errorText.text = "successful registration";
+        errorText.text = "SUCCESSFUL REGISTRATION";
     }
 
     public void DisplayLogin()
     {
         errorText.color = Color.green;
-        errorText.text = "login complete";
+        errorText.text = "LOGIN COMPLETE";
     }
 
     public void SetEmpty()
     {
         errorText.text = "";
+    }
+
+    public void ServerNotResponce()
+    {
+        errorText.color = Color.red;
+        errorText.text = "THE SERVER IS NOT RESPONDING";
     }
 }
